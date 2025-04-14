@@ -9,9 +9,25 @@ class NotificationManager {
         this.notifications = []; // 当前显示的通知列表
         this.counter = 0; // 用于生成唯一ID
         this.maxNotifications = 3; // 最大同时显示的通知数量
+        this.notificationContainer = null; // 通知容器
         
         // 添加全局样式
         this.addStyles();
+        // 创建通知容器
+        this.createNotificationContainer();
+    }
+    
+    createNotificationContainer() {
+        // 检查是否已存在容器
+        if (document.getElementById('notification-container')) {
+            this.notificationContainer = document.getElementById('notification-container');
+            return;
+        }
+        
+        // 创建容器
+        this.notificationContainer = document.createElement('div');
+        this.notificationContainer.id = 'notification-container';
+        document.body.appendChild(this.notificationContainer);
     }
     
     addStyles() {
@@ -22,58 +38,45 @@ class NotificationManager {
         
         const style = document.createElement('style');
         style.textContent = `
+            /* 通知容器 */
+            #notification-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 15px;
+                z-index: 9999;
+                pointer-events: none; /* 允许点击容器下方的元素 */
+                max-height: 100vh;
+                overflow: hidden;
+            }
+            
             /* 基础通知样式 */
             .game-notification {
-                position: fixed;
-                z-index: 9999;
+                position: relative;
                 font-family: 'Microsoft YaHei', sans-serif;
                 box-sizing: border-box;
-                transition: all 0.3s ease;
+                transition: all 0.3s ease, transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
                 opacity: 0;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 border-radius: 8px;
                 overflow: hidden;
-                max-width: 400px;
+                max-width: 80%;
                 width: auto;
                 padding: 0;
                 line-height: 1.5;
-                margin: 10px;
-            }
-            
-            /* 右下角通知 */
-            .game-notification.bottom-right {
-                bottom: 20px;
-                right: -420px; /* 初始位置在屏幕外 */
-            }
-            
-            /* 顶部通知 */
-            .game-notification.top {
-                top: -100px; /* 初始位置在屏幕外 */
-                left: 50%;
-                transform: translateX(-50%);
-            }
-            
-            /* 中央通知 */
-            .game-notification.center {
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) scale(0.8);
+                margin-bottom: 10px;
+                transform: translateY(-20px);
+                pointer-events: auto; /* 确保通知可以点击 */
             }
             
             /* 显示状态样式 */
-            .game-notification.show.bottom-right {
-                right: 20px;
+            .game-notification.show {
                 opacity: 1;
-            }
-            
-            .game-notification.show.top {
-                top: 20px;
-                opacity: 1;
-            }
-            
-            .game-notification.show.center {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
+                transform: translateY(0);
             }
             
             /* 通知内容容器 */
@@ -146,13 +149,13 @@ class NotificationManager {
             
             /* 动画效果 */
             @keyframes notification-fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
             
             @keyframes notification-fadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
             }
             
             /* 资源相关通知样式 */
@@ -181,6 +184,38 @@ class NotificationManager {
                 font-weight: bold;
                 margin: 0 2px;
             }
+            
+            /* 标准行动反馈样式 */
+            .action-feedback {
+                position: fixed;
+                top: 50%; /* 居中显示 */
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(0, 0, 0, 0.85);
+                color: white;
+                padding: 14px 22px;
+                border-radius: 8px;
+                font-size: 1rem;
+                max-width: 80%;
+                text-align: center;
+                z-index: 9998; /* 比通知栏低一级 */
+                animation: fadeIn 0.5s;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            }
+            
+            .action-feedback.fade-out {
+                animation: fadeOut 0.5s;
+            }
+            
+            @keyframes fadeIn {
+                from {opacity: 0; transform: translate(-50%, -40%);}
+                to {opacity: 1; transform: translate(-50%, -50%);}
+            }
+            
+            @keyframes fadeOut {
+                from {opacity: 1; transform: translate(-50%, -50%);}
+                to {opacity: 0; transform: translate(-50%, -60%);}
+            }
         `;
         
         style.setAttribute('data-notification-manager', 'true');
@@ -193,10 +228,11 @@ class NotificationManager {
             message,
             type = 'info', // 'success', 'error', 'warning', 'info', 'item', 'temp'
             duration = 4500,
-            position = 'bottom-right', // 'bottom-right', 'top', 'center'
+            position = 'top', // 仅支持顶部通知，忽略其他位置设置
             icon = this.getDefaultIcon(type),
             closable = true,
-            resourceType = null // 资源类型：'hunger', 'fatigue', 'dishonor', 'clue', 'trace'
+            resourceType = null, // 资源类型：'hunger', 'fatigue', 'dishonor', 'clue', 'trace'
+            onClose = null // 关闭通知后的回调函数
         } = options;
         
         // 限制最大通知数量，先关闭一些旧通知
@@ -208,7 +244,7 @@ class NotificationManager {
         // 创建通知元素
         const notification = document.createElement('div');
         notification.id = id;
-        notification.className = `game-notification notification-${type} ${position}`;
+        notification.className = `game-notification notification-${type}`;
         
         // 创建内容容器
         const content = document.createElement('div');
@@ -233,19 +269,20 @@ class NotificationManager {
             closeElement.innerHTML = '×';
             closeElement.onclick = (e) => {
                 e.stopPropagation(); // 防止事件冒泡
-                this.close(id);
+                this.close(id, onClose); // 传递回调函数
             };
             content.appendChild(closeElement);
         }
         
         notification.appendChild(content);
-        document.body.appendChild(notification);
+        // 添加到通知容器
+        this.notificationContainer.appendChild(notification);
         
         // 设置定时器
         let timer = null;
         if (duration > 0) {
             timer = setTimeout(() => {
-                this.close(id);
+                this.close(id, onClose); // 传递回调函数
             }, duration);
         }
         
@@ -253,7 +290,8 @@ class NotificationManager {
         this.notifications.push({
             id,
             element: notification,
-            timer: timer
+            timer: timer,
+            onClose // 保存回调函数
         });
         
         // 添加显示动画
@@ -268,15 +306,21 @@ class NotificationManager {
     }
     
     // 关闭通知
-    close(id) {
+    close(id, customCallback = null) {
         const notificationIndex = this.notifications.findIndex(n => n.id === id);
         if (notificationIndex === -1) return;
         
-        const { element, timer } = this.notifications[notificationIndex];
+        const { element, timer, onClose } = this.notifications[notificationIndex];
         
         // 清除定时器
         if (timer) {
             clearTimeout(timer);
+        }
+        
+        // 执行回调函数
+        const callback = customCallback || onClose;
+        if (typeof callback === 'function') {
+            callback();
         }
         
         // 移除通知对象，防止内存泄漏
@@ -292,7 +336,7 @@ class NotificationManager {
         
         // 延迟移除元素
         setTimeout(() => {
-            if (element.parentNode) {
+            if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
             }
         }, 300);
@@ -330,15 +374,29 @@ class NotificationManager {
     limitNotifications() {
         // 如果通知数量超过限制，关闭最早的通知
         if (this.notifications.length >= this.maxNotifications) {
-            // 只关闭需要关闭的数量，而不是一次性全部关闭
-            const toClose = this.notifications.slice(
-                0, 
-                this.notifications.length - this.maxNotifications + 1
-            );
+            // 计算需要关闭的通知数量
+            const toCloseCount = this.notifications.length - this.maxNotifications + 1;
             
-            // 关闭多余的通知
+            // 获取需要关闭的通知
+            const toClose = this.notifications.slice(0, toCloseCount);
+            
+            // 立即关闭多余的通知，不使用动画效果
             toClose.forEach(notification => {
-                this.close(notification.id);
+                const { id, element, timer } = notification;
+                
+                // 清除定时器
+                if (timer) clearTimeout(timer);
+                
+                // 从DOM中立即移除
+                if (element && element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+                
+                // 从通知列表中移除
+                const index = this.notifications.findIndex(n => n.id === id);
+                if (index !== -1) {
+                    this.notifications.splice(index, 1);
+                }
             });
         }
     }
@@ -399,19 +457,16 @@ class NotificationManager {
         return this.notify({
             message,
             type: 'item',
-            duration: 6000, // 道具通知显示更长时间
             ...options
         });
     }
     
-    // 临时通知（资源变化等）
+    // 临时通知
     temp(message, options = {}) {
         return this.notify({
             message,
             type: 'temp',
-            duration: 3000, // 临时通知显示更短时间
-            position: 'top',
-            closable: false,
+            duration: 3000,
             ...options
         });
     }
@@ -420,7 +475,7 @@ class NotificationManager {
     resource(resource, message, options = {}) {
         return this.notify({
             message,
-            type: 'info',
+            type: 'temp',
             resourceType: resource,
             ...options
         });
@@ -878,8 +933,8 @@ function openSpecialActivityModal(action) {
                 
                 // 显示特殊效果
                 if (option.specialEffects) {
-                    for (const [resource, willEffect] of Object.entries(option.specialEffects)) {
-                        if (willEffect && ['clue', 'trace'].includes(resource)) {
+                    for (const [resource, effectValue] of Object.entries(option.specialEffects)) {
+                        if (effectValue !== 0 && ['clue', 'trace'].includes(resource)) {
                             const effectElement = document.createElement('div');
                             effectElement.className = 'option-effect';
                             
@@ -892,8 +947,15 @@ function openSpecialActivityModal(action) {
                             effectElement.appendChild(resourceName);
                             
                             const effectValue = document.createElement('span');
-                            effectValue.textContent = "抽牌";
-                            effectValue.className = 'effect-special';
+                            if (option.specialEffects[resource] > 0) {
+                                // 显示对应数量的加号
+                                effectValue.textContent = '+'.repeat(option.specialEffects[resource]);
+                                effectValue.className = 'effect-special';
+                            } else {
+                                // 显示对应数量的减号
+                                effectValue.textContent = '-'.repeat(Math.abs(option.specialEffects[resource]));
+                                effectValue.className = 'effect-remove';
+                            }
                             effectElement.appendChild(effectValue);
                             
                             effectsContainer.appendChild(effectElement);
@@ -903,8 +965,8 @@ function openSpecialActivityModal(action) {
                 
                 // 显示基础资源损耗
                 if (option.damageTypes) {
-                    for (const [resource, willDamage] of Object.entries(option.damageTypes)) {
-                        if (willDamage && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
+                    for (const [resource, damageValue] of Object.entries(option.damageTypes)) {
+                        if (damageValue !== 0 && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
                             const effectElement = document.createElement('div');
                             effectElement.className = 'option-effect';
                             
@@ -918,8 +980,15 @@ function openSpecialActivityModal(action) {
                             effectElement.appendChild(resourceName);
                             
                             const effectValue = document.createElement('span');
-                            effectValue.textContent = "抽牌";
-                            effectValue.className = 'effect-damage';
+                            if (damageValue > 0) {
+                                // 显示对应数量的加号
+                                effectValue.textContent = '+'.repeat(damageValue);
+                                effectValue.className = 'effect-damage';
+                            } else {
+                                // 显示对应数量的减号
+                                effectValue.textContent = '-'.repeat(Math.abs(damageValue));
+                                effectValue.className = 'effect-remove';
+                            }
                             effectElement.appendChild(effectValue);
                             
                             effectsContainer.appendChild(effectElement);
@@ -1064,8 +1133,8 @@ function openLocationModal(locationName, description, locationIndex) {
         
         // 遍历所有损耗类型
         let hasDamage = false;
-        for (const [resource, shouldDamage] of Object.entries(action.damageTypes)) {
-            if (shouldDamage && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
+        for (const [resource, damageValue] of Object.entries(action.damageTypes)) {
+            if (damageValue !== 0 && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
                 hasDamage = true;
                 const effectElement = document.createElement('div');
                 effectElement.className = 'action-effect';
@@ -1080,8 +1149,15 @@ function openLocationModal(locationName, description, locationIndex) {
                 effectElement.appendChild(resourceName);
                 
                 const effectValue = document.createElement('span');
-                effectValue.textContent = "抽牌";
-                effectValue.className = 'effect-damage';
+                if (damageValue > 0) {
+                    // 显示对应数量的加号
+                    effectValue.textContent = '+'.repeat(damageValue);
+                    effectValue.className = 'effect-damage';
+                } else {
+                    // 显示对应数量的减号
+                    effectValue.textContent = '-'.repeat(Math.abs(damageValue));
+                    effectValue.className = 'effect-remove';
+                }
                 effectElement.appendChild(effectValue);
                 
                 effectsContainer.appendChild(effectElement);
@@ -1164,8 +1240,8 @@ function openLocationModal(locationName, description, locationIndex) {
             
             // 检查特殊效果属性是否存在
             if (action.specialEffects) {
-                for (const [resource, willEffect] of Object.entries(action.specialEffects)) {
-                    if (willEffect && ['clue', 'trace'].includes(resource)) {
+                for (const [resource, effectValue] of Object.entries(action.specialEffects)) {
+                    if (effectValue !== 0 && ['clue', 'trace'].includes(resource)) {
                         hasEffect = true;
                         const effectElement = document.createElement('div');
                         effectElement.className = 'action-effect';
@@ -1181,8 +1257,15 @@ function openLocationModal(locationName, description, locationIndex) {
                         
                         // 显示效果指示
                         const effectValue = document.createElement('span');
-                        effectValue.textContent = "抽牌";
-                        effectValue.className = 'effect-special';
+                        if (action.specialEffects[resource] > 0) {
+                            // 显示对应数量的加号
+                            effectValue.textContent = '+'.repeat(action.specialEffects[resource]);
+                            effectValue.className = 'effect-special';
+                        } else {
+                            // 显示对应数量的减号
+                            effectValue.textContent = '-'.repeat(Math.abs(action.specialEffects[resource]));
+                            effectValue.className = 'effect-remove';
+                        }
                         effectElement.appendChild(effectValue);
                         
                         effectsContainer.appendChild(effectElement);
@@ -1192,8 +1275,8 @@ function openLocationModal(locationName, description, locationIndex) {
             
             // 如果特殊活动也有基础资源损耗，显示这些效果
             if (action.damageTypes) {
-                for (const [resource, willDamage] of Object.entries(action.damageTypes)) {
-                    if (willDamage && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
+                for (const [resource, damageValue] of Object.entries(action.damageTypes)) {
+                    if (damageValue !== 0 && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
                         hasEffect = true;
                         const effectElement = document.createElement('div');
                         effectElement.className = 'action-effect';
@@ -1210,8 +1293,15 @@ function openLocationModal(locationName, description, locationIndex) {
                         
                         // 显示损耗指示
                         const effectValue = document.createElement('span');
-                        effectValue.textContent = "抽牌";
-                        effectValue.className = 'effect-damage';
+                        if (damageValue > 0) {
+                            // 显示对应数量的加号
+                            effectValue.textContent = '+'.repeat(damageValue);
+                            effectValue.className = 'effect-damage';
+                        } else {
+                            // 显示对应数量的减号
+                            effectValue.textContent = '-'.repeat(Math.abs(damageValue));
+                            effectValue.className = 'effect-remove';
+                        }
                         effectElement.appendChild(effectValue);
                         
                         effectsContainer.appendChild(effectElement);
@@ -1341,120 +1431,299 @@ function performAction(action) {
     // 根据活动类型处理效果
     if (action.actionType === 'normal') {
         // 处理普通活动效果
-    for (const [resource, shouldDamage] of Object.entries(action.damageTypes)) {
-        if (shouldDamage) {
-            // 如果是基础损耗类型
-            if (['hunger', 'fatigue', 'dishonor'].includes(resource)) {
-                // 抽取一张扑克牌
-                const card = drawCard();
-                
-                // 添加牌到牌堆，传递整个活动对象
-                addCardToPile(resource, card, action);
-                
-                // 计算牌堆总值
-                const total = calculateOptimalTotal(gameState.cards[resource]);
-                
-                // 记录结果
-                damageResults[resource] = { card: card, value: total, previousValue: gameState.resources[resource] };
-                
-                // 检查牌堆总值
-                if (total > config.resourceLimits.max) {
-                    // 爆牌 - 超过21点
-                    specialEffects.busted.push(resource);
-                    
-                    // 清空牌堆
-                    clearCardPile(resource);
-                    
-                    // 重置资源值为0
-                    gameState.resources[resource] = 0;
-                } 
-                else if (Math.abs(total - config.resourceLimits.max) < 0.01) {
-                    // 正好21点
-                    specialEffects.exactly21.push(resource);
-                    
-                    // 清空牌堆
-                    clearCardPile(resource);
-                    
-                    // 重置资源值为0
-                    gameState.resources[resource] = 0;
-                }
-                else {
-                    // 正常情况，更新资源值
-                    gameState.resources[resource] = total;
+        for (const [resource, damageValue] of Object.entries(action.damageTypes)) {
+            if (damageValue !== 0) {
+                // 如果是基础损耗类型
+                if (['hunger', 'fatigue', 'dishonor'].includes(resource)) {
+                    if (damageValue > 0) {
+                        // 正数：抽取指定数量的牌
+                        for (let i = 0; i < damageValue; i++) {
+                            // 抽取一张扑克牌
+                            const card = drawCard();
+                            
+                            // 添加牌到牌堆，传递整个活动对象
+                            addCardToPile(resource, card, action);
+                            
+                            // 计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 记录结果 (只记录最后一张牌的结果)
+                            if (i === damageValue - 1) {
+                                damageResults[resource] = { 
+                                    card: card, 
+                                    value: total, 
+                                    previousValue: gameState.resources[resource],
+                                    count: damageValue
+                                };
+                            }
+                            
+                            // 检查牌堆总值
+                            if (total > config.resourceLimits.max) {
+                                // 爆牌 - 超过21点
+                                specialEffects.busted.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 爆牌后不再继续抽牌
+                                break;
+                            } 
+                            else if (Math.abs(total - config.resourceLimits.max) < 0.01) {
+                                // 正好21点
+                                specialEffects.exactly21.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 达到21点后不再继续抽牌
+                                break;
+                            }
+                            else {
+                                // 正常情况，更新资源值
+                                gameState.resources[resource] = total;
+                            }
+                        }
+                    } else {
+                        // 负数：移除指定数量的牌
+                        const removeCount = Math.min(Math.abs(damageValue), gameState.cards[resource].length);
+                        
+                        if (removeCount > 0) {
+                            // 记录移除前的值
+                            const previousValue = gameState.resources[resource];
+                            
+                            // 移除最近添加的牌（从牌堆顶部）
+                            for (let i = 0; i < removeCount; i++) {
+                                if (gameState.cards[resource].length > 0) {
+                                    // 移除牌堆中最后一张牌
+                                    gameState.cards[resource].pop();
+                                    
+                                    // 移除对应的DOM元素
+                                    const lastCard = gameState.cardPiles[resource].lastElementChild;
+                                    if (lastCard) {
+                                        gameState.cardPiles[resource].removeChild(lastCard);
+                                    }
+                                }
+                            }
+                            
+                            // 重新计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 更新资源值
+                            gameState.resources[resource] = total;
+                            
+                            // 记录结果
+                            damageResults[resource] = { 
+                                value: total, 
+                                previousValue: previousValue,
+                                count: damageValue, // 负值表示移除的数量
+                                removeCount: removeCount
+                            };
+                        }
+                    }
                 }
             }
         }
-    }
     } else if (action.actionType === 'special') {
         // 处理特殊活动效果
         // 特殊活动直接作用于线索和行踪
         if (action.specialEffects) {
-            for (const [resource, shouldEffect] of Object.entries(action.specialEffects)) {
-                if (shouldEffect && ['clue', 'trace'].includes(resource)) {
-                    // 抽取一张扑克牌
-                    const card = drawCard();
-                    
-                    // 添加牌到指定牌堆，使用活动中的描述
-                    addCardToPile(resource, card, action);
-                    
-                    // 计算牌堆总值
-                    const total = calculateOptimalTotal(gameState.cards[resource]);
-                    
-                    // 记录结果
-                    damageResults[resource] = { 
-                        card: card, 
-                        value: total, 
-                        previousValue: gameState.resources[resource] 
-                    };
-                    
-                    // 更新资源值
-                    gameState.resources[resource] = total;
-                    
-                    // 对线索和行踪的特殊判断将在addCardToPile函数中处理
+            for (const [resource, effectValue] of Object.entries(action.specialEffects)) {
+                if (effectValue !== 0 && ['clue', 'trace'].includes(resource)) {
+                    if (effectValue > 0) {
+                        // 正数：抽取指定数量的牌
+                        for (let i = 0; i < effectValue; i++) {
+                            // 抽取一张扑克牌
+                            const card = drawCard();
+                            
+                            // 添加牌到指定牌堆，使用活动中的描述
+                            addCardToPile(resource, card, action);
+                            
+                            // 计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 记录结果 (只记录最后一张牌的结果)
+                            if (i === effectValue - 1) {
+                                damageResults[resource] = { 
+                                    card: card, 
+                                    value: total, 
+                                    previousValue: gameState.resources[resource],
+                                    count: effectValue
+                                };
+                            }
+                            
+                            // 检查牌堆总值
+                            if (total > config.resourceLimits.max) {
+                                // 爆牌 - 超过21点
+                                specialEffects.busted.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 爆牌后不再继续抽牌
+                                break;
+                            } 
+                            else if (Math.abs(total - config.resourceLimits.max) < 0.01) {
+                                // 正好21点
+                                specialEffects.exactly21.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 达到21点后不再继续抽牌
+                                break;
+                            }
+                            else {
+                                // 正常情况，更新资源值
+                                gameState.resources[resource] = total;
+                            }
+                        }
+                    } else {
+                        // 负数：移除指定数量的牌
+                        const removeCount = Math.min(Math.abs(effectValue), gameState.cards[resource].length);
+                        
+                        if (removeCount > 0) {
+                            // 记录移除前的值
+                            const previousValue = gameState.resources[resource];
+                            
+                            // 移除最近添加的牌（从牌堆顶部）
+                            for (let i = 0; i < removeCount; i++) {
+                                if (gameState.cards[resource].length > 0) {
+                                    // 移除牌堆中最后一张牌
+                                    gameState.cards[resource].pop();
+                                    
+                                    // 移除对应的DOM元素
+                                    const lastCard = gameState.cardPiles[resource].lastElementChild;
+                                    if (lastCard) {
+                                        gameState.cardPiles[resource].removeChild(lastCard);
+                                    }
+                                }
+                            }
+                            
+                            // 重新计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 更新资源值
+                            gameState.resources[resource] = total;
+                            
+                            // 记录结果
+                            damageResults[resource] = { 
+                                value: total, 
+                                previousValue: previousValue,
+                                count: effectValue, // 负值表示移除的数量
+                                removeCount: removeCount
+                            };
+                        }
+                    }
                 }
             }
         }
         
         // 处理特殊活动对基础资源的影响（如果有）
         if (action.damageTypes) {
-            for (const [resource, shouldDamage] of Object.entries(action.damageTypes)) {
-                if (shouldDamage && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
-                    // 抽取一张扑克牌
-                    const card = drawCard();
-                    
-                    // 添加牌到牌堆，传递整个活动对象
-                    addCardToPile(resource, card, action);
-                    
-                    // 计算牌堆总值
-                    const total = calculateOptimalTotal(gameState.cards[resource]);
-                    
-                    // 记录结果
-                    damageResults[resource] = { card: card, value: total, previousValue: gameState.resources[resource] };
-                    
-                    // 检查牌堆总值
-                    if (total > config.resourceLimits.max) {
-                        // 爆牌 - 超过21点
-                        specialEffects.busted.push(resource);
+            for (const [resource, damageValue] of Object.entries(action.damageTypes)) {
+                if (damageValue !== 0 && ['hunger', 'fatigue', 'dishonor'].includes(resource)) {
+                    if (damageValue > 0) {
+                        // 正数：抽取指定数量的牌
+                        for (let i = 0; i < damageValue; i++) {
+                            // 抽取一张扑克牌
+                            const card = drawCard();
+                            
+                            // 添加牌到牌堆，传递整个活动对象
+                            addCardToPile(resource, card, action);
+                            
+                            // 计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 记录结果 (只记录最后一张牌的结果)
+                            if (i === damageValue - 1) {
+                                damageResults[resource] = { 
+                                    card: card, 
+                                    value: total, 
+                                    previousValue: gameState.resources[resource],
+                                    count: damageValue
+                                };
+                            }
+                            
+                            // 检查牌堆总值
+                            if (total > config.resourceLimits.max) {
+                                // 爆牌 - 超过21点
+                                specialEffects.busted.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 爆牌后不再继续抽牌
+                                break;
+                            } 
+                            else if (Math.abs(total - config.resourceLimits.max) < 0.01) {
+                                // 正好21点
+                                specialEffects.exactly21.push(resource);
+                                
+                                // 清空牌堆
+                                clearCardPile(resource);
+                                
+                                // 重置资源值为0
+                                gameState.resources[resource] = 0;
+                                
+                                // 达到21点后不再继续抽牌
+                                break;
+                            }
+                            else {
+                                // 正常情况，更新资源值
+                                gameState.resources[resource] = total;
+                            }
+                        }
+                    } else {
+                        // 负数：移除指定数量的牌
+                        const removeCount = Math.min(Math.abs(damageValue), gameState.cards[resource].length);
                         
-                        // 清空牌堆
-                        clearCardPile(resource);
-                        
-                        // 重置资源值为0
-                        gameState.resources[resource] = 0;
-                    } 
-                    else if (Math.abs(total - config.resourceLimits.max) < 0.01) {
-                        // 正好21点
-                        specialEffects.exactly21.push(resource);
-                        
-                        // 清空牌堆
-                        clearCardPile(resource);
-                        
-                        // 重置资源值为0
-                        gameState.resources[resource] = 0;
-                    }
-                    else {
-                        // 正常情况，更新资源值
-                        gameState.resources[resource] = total;
+                        if (removeCount > 0) {
+                            // 记录移除前的值
+                            const previousValue = gameState.resources[resource];
+                            
+                            // 移除最近添加的牌（从牌堆顶部）
+                            for (let i = 0; i < removeCount; i++) {
+                                if (gameState.cards[resource].length > 0) {
+                                    // 移除牌堆中最后一张牌
+                                    gameState.cards[resource].pop();
+                                    
+                                    // 移除对应的DOM元素
+                                    const lastCard = gameState.cardPiles[resource].lastElementChild;
+                                    if (lastCard) {
+                                        gameState.cardPiles[resource].removeChild(lastCard);
+                                    }
+                                }
+                            }
+                            
+                            // 重新计算牌堆总值
+                            const total = calculateOptimalTotal(gameState.cards[resource]);
+                            
+                            // 更新资源值
+                            gameState.resources[resource] = total;
+                            
+                            // 记录结果
+                            damageResults[resource] = { 
+                                value: total, 
+                                previousValue: previousValue,
+                                count: damageValue, // 负值表示移除的数量
+                                removeCount: removeCount
+                            };
+                        }
                     }
                 }
             }
@@ -1764,10 +2033,11 @@ function addCardToPile(resource, card, actionData) {
                 gameState.resources.trace = 0;
                 updateResourceBars();
                 
-                // 显示提示 - 保留21点通知
+                // 显示提示 - 使用新通知系统
                 notificationManager.success(`行踪达到21点，获得【${cardDisplayName}】，牌堆已清空！`, {
                     resourceType: 'trace',
-                    position: 'top'
+                    position: 'top',
+                    duration: 5000
                 });
             };
             
@@ -1784,10 +2054,11 @@ function addCardToPile(resource, card, actionData) {
                 gameState.resources.trace = 0;
                 updateResourceBars();
                 
-                // 显示提示 - 保留爆牌通知
+                // 显示提示 - 使用新通知系统
                 notificationManager.error(`行踪超过21点，获得【${cardDisplayName}】，被发现！被动遭遇+1，牌堆已清空`, {
                     resourceType: 'trace',
-                    position: 'top'
+                    position: 'top',
+                    duration: 5000
                 });
             };
             
@@ -1811,103 +2082,94 @@ function getDefaultCardDescription(resource) {
 
 // 显示行动反馈
 function showActionFeedback(action, damageResults, specialEffects) {
-    // 获取活动名称
-    const actionName = action.name;
+    // 构建反馈信息
+    let messages = [];
     
-    // 创建基础消息
-    let message = `执行了 "${actionName}"`;
-    
-    // 创建结果详情列表
-    let detailMessages = [];
-    
-    // 是否显示普通抽牌通知的标志
-    const showNormalCardNotifications = false; // 设置为false来取消普通抽牌通知
-    
-    // 处理资源变化
+    // 对每种资源处理反馈
     for (const [resource, result] of Object.entries(damageResults)) {
-        // 跳过内部临时键
-        if (resource.includes('_')) continue;
-        
-        // 根据资源类型获取资源显示名
-        let resourceDisplayName = '';
-        if (['hunger', 'fatigue', 'dishonor', 'clue', 'trace'].includes(resource)) {
-            resourceDisplayName = getResourceDisplayName(resource);
-        } else {
-            continue; // 跳过无法识别的资源
-        }
-        
-        // 卡牌名称
-        const cardName = `${result.card.suitName}${result.card.name}`;
-        
-        // 只有当启用普通抽牌通知时才添加
-        if (showNormalCardNotifications) {
-            detailMessages.push({
-                message: `${resourceDisplayName}: 抽到 <span class="notification-highlight">${cardName}</span>, 总值为 <span class="notification-highlight">${Math.floor(result.value)}</span>`,
-                resourceType: resource
-            });
-        }
-    }
-    
-    // 处理触发了21点的牌堆 - 这些是特殊事件，始终显示
-    for (const resource of specialEffects.exactly21) {
-        const resourceDisplayName = getResourceDisplayName(resource);
-        detailMessages.push({
-            message: `${resourceDisplayName} 达到了 <span class="notification-highlight">21点</span>，获得线索！`,
-            resourceType: resource,
-            type: 'success'
-        });
-    }
-    
-    // 处理爆牌的牌堆 - 这些是特殊事件，始终显示
-    for (const resource of specialEffects.busted) {
-        const resourceDisplayName = getResourceDisplayName(resource);
-        detailMessages.push({
-            message: `${resourceDisplayName} <span class="notification-highlight">超过21点</span>，产生行踪！`,
-            resourceType: resource,
-            type: 'error'
-        });
-    }
-    
-    // 综合所有信息，最多显示一个基本信息和3个详细信息
-    if (detailMessages.length > 0) {
-        // 首先显示基础消息
-        notificationManager.info(message, {
-            position: 'top',
-            duration: 3000
-        });
-        
-        // 限制详细信息数量，最多显示3个
-        if (detailMessages.length > 3) {
-            detailMessages = detailMessages.slice(0, 3);
-        }
-        
-        // 显示详细结果（使用队列方式，一次只显示一个）
-        let delay = 500;
-        const showNextMessage = (index) => {
-            if (index >= detailMessages.length) return;
+        // 如果是特殊触发资源，单独处理
+        if (resource.includes('_')) {
+            // 例如 clue_hunger 表示由hunger触发的clue抽牌
+            const [actualResource, triggerResource] = resource.split('_');
             
-            const detail = detailMessages[index];
-            const type = detail.type || 'info';
-            
-            notificationManager[type](detail.message, {
-                resourceType: detail.resourceType,
+            if (result.trigger) {
+                messages.push(`${result.trigger}，获得【${getResourceDisplayName(actualResource)}】牌`);
+            }
+            continue;
+        }
+        
+        // 处理普通资源反馈
+        if (result) {
+            // 如果是负数，表示移除牌
+            if (result.count < 0) {
+                const removeCount = result.removeCount || Math.abs(result.count);
+                if (removeCount > 0) {
+                    messages.push(`移除了${removeCount}张【${getResourceDisplayName(resource)}】牌`);
+                }
+            } 
+            // 如果是正数，表示抽取牌
+            else if (result.count > 0) {
+                if (result.count === 1) {
+                    // 单张抽牌显示具体卡牌信息
+                    messages.push(`抽取了【${getResourceDisplayName(resource)}】牌: ${result.card.suitName}${result.card.name}`);
+                } else {
+                    // 多张抽牌简化显示
+                    messages.push(`抽取了${result.count}张【${getResourceDisplayName(resource)}】牌`);
+                }
+            }
+        }
+    }
+    
+    // 添加特殊效果消息
+    if (specialEffects.exactly21.length > 0) {
+        for (const resource of specialEffects.exactly21) {
+            messages.push(`【${getResourceDisplayName(resource)}】达到21点，牌堆已清空`);
+        }
+    }
+    
+    if (specialEffects.busted.length > 0) {
+        for (const resource of specialEffects.busted) {
+            messages.push(`【${getResourceDisplayName(resource)}】超过21点，牌堆已清空`);
+        }
+    }
+    
+    // 使用辅助函数显示消息队列
+    if (messages.length > 0) {
+        showMessageQueue(messages);
+    }
+    
+    // 更新资源条
+    updateResourceBars();
+}
+
+// 显示消息队列
+function showMessageQueue(messages) {
+    if (!messages || messages.length === 0) return;
+    
+    // 消息索引
+    let currentIndex = 0;
+    const messageCount = messages.length;
+    
+    // 显示下一条消息
+    const showNextMessage = (index) => {
+        if (index < messageCount) {
+            // 使用通知管理器显示消息
+            notificationManager.info(messages[index], {
                 position: 'top',
-                duration: 4000
+                duration: 3000,
+                type: 'temp',
+                onClose: () => {
+                    // 消息关闭后，延迟显示下一条
+                    setTimeout(() => {
+                        showNextMessage(index + 1);
+                    }, 300);
+                }
             });
-            
-            // 下一条消息延迟600ms显示
-            setTimeout(() => showNextMessage(index + 1), 600);
-        };
-        
-        // 开始显示第一条消息
-        setTimeout(() => showNextMessage(0), delay);
-    } else if (showNormalCardNotifications) {
-        // 如果没有详情但配置了显示普通通知，则显示基础消息
-        notificationManager.info(message, {
-            position: 'top'
-        });
-    }
-    // 如果没有详情且不显示普通通知，则不显示任何通知
+        }
+    };
+    
+    // 开始显示第一条消息
+    showNextMessage(currentIndex);
 }
 
 // 增加损耗值
@@ -2106,67 +2368,61 @@ function addPassiveEncounter(count = 1) {
 
 // 显示临时通知
 function showNotification(message, className) {
-    // 根据className确定通知类型和资源类型
-    let type = 'info';
-    let resourceType = null;
-    let position = 'top';
+    // 确保消息内容是字符串
+    message = message || '';
     
-    if (className === 'item-drop') {
-        type = 'item';
-        position = 'bottom-right';
-        message = `<span class="notification-highlight">${message}</span>`;
-    } else if (className === 'trace-21') {
-        type = 'success';
-        resourceType = 'trace';
-    } else if (className === 'trace-bust') {
-        type = 'error';
-        resourceType = 'trace';
-    } else if (className === 'exactly-21') {
-        type = 'success';
-    } else if (className === 'busted') {
-        type = 'error';
-    } else if (className === 'use-item') {
-        type = 'info';
-    } else if (className === 'debug-card' || className === 'debug-item') {
-        type = 'temp';
-        position = 'bottom-right';
-    } else if (className && className.startsWith('clue-')) {
-        resourceType = 'clue';
+    // 统一使用NotificationManager显示通知
+    const options = { position: 'top', duration: 5000 };
+    
+    // 根据不同的类名设置不同的通知类型
+    switch(className) {
+        case 'trace-21':
+            options.resourceType = 'trace';
+            return notificationManager.success(message, options);
+        case 'trace-bust':
+            options.resourceType = 'trace';
+            return notificationManager.error(message, options);
+        case 'clue-21-combo':
+            options.resourceType = 'clue';
+            return notificationManager.success(message, options);
+        default:
+            // 其它通知类型
+            message = `<span class="notification-highlight">${message}</span>`;
+            return notificationManager.notify({
+                message,
+                position: 'top',
+                type: 'info',
+                ...options
+            });
     }
-    
-    // 使用通知管理器
-    return notificationManager.notify({
-        message,
-        type,
-        resourceType,
-        position,
-        duration: type === 'item' ? 6000 : 5000
-    });
 }
 
 // 切换线索牌的选择状态
 function toggleClueCardSelection(cardIndex) {
-    const selectedIndex = gameState.clueSelection.selectedCards.indexOf(cardIndex);
+    // 查找索引在选中列表中的位置
+    const selectionIndex = gameState.clueSelection.selectedCards.indexOf(cardIndex);
+    
+    // 获取卡牌元素
     const cardElement = gameState.clueSelection.cardElements[cardIndex];
     
-    // 如果已选中，则取消选中
-    if (selectedIndex !== -1) {
-        gameState.clueSelection.selectedCards.splice(selectedIndex, 1);
-        cardElement.classList.remove('selected');
+    // 如果已经选中，取消选中
+    if (selectionIndex !== -1) {
+        gameState.clueSelection.selectedCards.splice(selectionIndex, 1);
+        if (cardElement) cardElement.classList.remove('selected');
     } 
-    // 否则选中
+    // 否则添加到选中列表
     else {
         gameState.clueSelection.selectedCards.push(cardIndex);
-        cardElement.classList.add('selected');
+        if (cardElement) cardElement.classList.add('selected');
     }
     
-    // 检查选中的卡牌总值
+    // 检查当前选中卡牌的总值
     checkSelectedClueCardsValue();
 }
 
-// 检查选中的线索牌总值
+// 检查已选中线索卡牌的总值
 function checkSelectedClueCardsValue() {
-    // 获取选中的卡牌
+    // 获取所有选中的索引
     const selectedCardIndices = gameState.clueSelection.selectedCards;
     
     // 获取计数器元素
@@ -2202,8 +2458,12 @@ function checkSelectedClueCardsValue() {
         // 增加主动遭遇
         addActiveEncounter(1);
         
-        // 显示提示
-        showNotification(`发现关键线索组合！主动遭遇+1`, 'clue-21-combo');
+        // 使用新通知系统显示提示
+        notificationManager.success(`发现关键线索组合！主动遭遇+1`, {
+            resourceType: 'clue',
+            position: 'top',
+            duration: 4000
+        });
         
         // 闪烁所选卡牌
         flashSelectedClueCards();
