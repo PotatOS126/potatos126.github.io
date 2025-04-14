@@ -603,6 +603,46 @@ function initGame() {
     // 更新遭遇分数
     updateEncounterScores();
     
+    // 添加窗口大小变化监听，调整布局
+    window.addEventListener('resize', adjustLayout);
+    
+    // 初始调整布局
+    adjustLayout();
+}
+
+// 适应布局变化，确保所有内容都能完整显示
+function adjustLayout() {
+    const resourcesArea = document.querySelector('.resources-area');
+    const resourcesRow = document.querySelector('.resources-row');
+    const resourceColumns = document.querySelectorAll('.resource-column');
+    
+    // 计算实际需要的高度
+    const columnHeights = Array.from(resourceColumns).map(column => {
+        // 获取牌堆中的卡牌数量
+        const cardPile = column.querySelector('.card-pile');
+        const cards = cardPile.querySelectorAll('.playing-card');
+        
+        // 基本高度 + 卡牌区域需要的高度
+        let baseHeight = 50; // 资源标题和进度条的高度
+        let cardsAreaHeight = 0;
+        
+        if (cards.length > 0) {
+            // 计算卡牌区域实际高度
+            const cardHeight = 160; // 卡牌高度
+            const rowsNeeded = Math.ceil(cards.length / 2); // 假设一行显示2张卡
+            cardsAreaHeight = rowsNeeded * (cardHeight + 10); // 加上间距
+        } else {
+            cardsAreaHeight = 280; // 最小高度
+        }
+        
+        return baseHeight + cardsAreaHeight;
+    });
+    
+    // 找出最高的列高度
+    const maxColumnHeight = Math.max(...columnHeights, 350);
+    
+    // 设置行高
+    resourcesRow.style.minHeight = `${maxColumnHeight}px`;
 }
 
 // 创建模态框
