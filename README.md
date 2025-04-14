@@ -1,2 +1,2 @@
-# 21GameTravelPrototype.github.io
+# 21TravelPrototype
 indie game prototype

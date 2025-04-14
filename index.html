@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猎人资源 - 游戏原型</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 标题区域 -->
+        <div class="header-area">
+            <h1 class="title">猎人旅途</h1>
+            
+            <!-- 特殊计分版 -->
+            <div class="score-container">
+                <div class="score-board">
+                    <div class="score-item">
+                        <div class="score-label">主动遭遇</div>
+                        <div class="score-value" id="active-encounter">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">被动遭遇</div>
+                        <div class="score-value" id="passive-encounter">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="location-info">
+                <h2 id="current-location">当前位置：起点</h2>
+                <button id="debug-button" class="debug-button">调试</button>
+            </div>
+        </div>
+        
+        <!-- 地点选择区域 -->
+        <div class="locations-section">
+            <h3>选择前往地点</h3>
+            <div class="locations-container" id="locations-container">
+                <!-- 地点选项将在这里动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 资源区域 -->
+        <div class="resources-area">
+            <h3 class="section-title">游戏资源</h3>
+            <div class="resources-row">
+                <!-- 饥饿损耗 -->
+                <div class="resource-column">
+                    <div class="resource-header">
+                        <span class="resource-label">饥饿损耗</span>
+                        <span class="resource-value"><span id="hunger-value">0</span>/21</span>
+                    </div>
+                    <div class="resource-bar-container">
+                        <div class="resource-bar" id="hunger-bar"></div>
+                    </div>
+                    <div class="card-pile" id="hunger-pile">
+                        <!-- 饥饿牌堆 -->
+                    </div>
+                </div>
+                
+                <!-- 疲劳损耗 -->
+                <div class="resource-column">
+                    <div class="resource-header">
+                        <span class="resource-label">疲劳损耗</span>
+                        <span class="resource-value"><span id="fatigue-value">0</span>/21</span>
+                    </div>
+                    <div class="resource-bar-container">
+                        <div class="resource-bar" id="fatigue-bar"></div>
+                    </div>
+                    <div class="card-pile" id="fatigue-pile">
+                        <!-- 疲劳牌堆 -->
+                    </div>
+                </div>
+                
+                <!-- 恶名损耗 -->
+                <div class="resource-column">
+                    <div class="resource-header">
+                        <span class="resource-label">恶名损耗</span>
+                        <span class="resource-value"><span id="dishonor-value">0</span>/21</span>
+                    </div>
+                    <div class="resource-bar-container">
+                        <div class="resource-bar" id="dishonor-bar"></div>
+                    </div>
+                    <div class="card-pile" id="dishonor-pile">
+                        <!-- 恶名牌堆 -->
+                    </div>
+                </div>
+                
+                <!-- 线索 -->
+                <div class="resource-column">
+                    <div class="resource-header">
+                        <span class="resource-label">线索</span>
+                        <span class="resource-value"><span id="clue-value">0</span>/21</span>
+                    </div>
+                    <div class="resource-bar-container">
+                        <div class="resource-bar" id="clue-bar"></div>
+                    </div>
+                    <div class="card-pile" id="clue-pile">
+                        <!-- 线索牌堆 -->
+                    </div>
+                    <div class="special-desc">基础损耗正好21点</div>
+                </div>
+                
+                <!-- 行踪 -->
+                <div class="resource-column">
+                    <div class="resource-header">
+                        <span class="resource-label">行踪</span>
+                        <span class="resource-value"><span id="trace-value">0</span>/21</span>
+                    </div>
+                    <div class="resource-bar-container">
+                        <div class="resource-bar" id="trace-bar"></div>
+                    </div>
+                    <div class="card-pile" id="trace-pile">
+                        <!-- 行踪牌堆 -->
+                    </div>
+                    <div class="special-desc">基础损耗超过21点</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 调试弹窗 -->
+    <div id="debug-modal" class="debug-modal">
+        <div class="debug-modal-content">
+            <span class="debug-close">&times;</span>
+            <h3>调试工具</h3>
+            <div class="debug-buttons">
+                <button id="add-hunger-card">添加饥饿牌</button>
+                <button id="add-fatigue-card">添加疲劳牌</button>
+                <button id="add-dishonor-card">添加恶名牌</button>
+                <button id="add-clue-card">添加线索牌</button>
+                <button id="add-trace-card">添加行踪牌</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="game.js"></script>
+</body>
+</html> 
