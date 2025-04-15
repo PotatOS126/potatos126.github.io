@@ -564,8 +564,8 @@ button:disabled {
 
 /* 扑克牌样式 */
 .playing-card {
-    width: 100px;
-    height: 160px;
+    width: 150px;
+    height: 240px;
     margin: 5px;
     background-color: white;
     border-radius: 8px;
@@ -586,7 +586,7 @@ button:disabled {
 }
 
 .card-value {
-    font-size: 20px;
+    font-size: 24px;
     position: absolute;
     top: 5px;
     left: 8px;
@@ -596,14 +596,14 @@ button:disabled {
 }
 
 .card-suit {
-    font-size: 16px;
+    font-size: 20px;
     margin-left: 2px;
 }
 
 .card-name {
-    font-size: 14px;
+    font-size: 16px;
     position: absolute;
-    top: 30px;
+    top: 35px;
     left: 8px;
     right: 8px;
     text-align: center;
@@ -612,15 +612,15 @@ button:disabled {
 }
 
 .card-desc {
-    font-size: 12px;
+    font-size: 14px;
     position: absolute;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
     text-align: center;
     color: #666;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 3px;
+    padding: 5px;
     border-radius: 4px;
 }
 
@@ -981,7 +981,7 @@ button:disabled {
     }
     
     .card-pile {
-        min-height: 250px;
+        min-height: 375px;
     }
 }
 
@@ -992,7 +992,7 @@ button:disabled {
     }
     
     .card-pile {
-        min-height: 220px;
+        min-height: 330px;
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: flex-start;
@@ -1000,18 +1000,23 @@ button:disabled {
     }
     
     .playing-card {
-        width: 70px;
-        height: 100px;
+        width: 105px;
+        height: 150px;
         margin: 3px;
     }
     
     .card-value {
-        font-size: 16px;
+        font-size: 18px;
     }
     
     .card-desc {
-        font-size: 9px;
-        padding: 2px;
+        font-size: 11px;
+        padding: 3px;
+    }
+    
+    .card-name {
+        font-size: 12px;
+        top: 30px;
     }
 }
 

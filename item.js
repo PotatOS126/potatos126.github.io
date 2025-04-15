@@ -63,50 +63,18 @@ const items = [
 const debugItems = [
     {
         id: 'debug_test',
-        type: '♥', // 红桃
-        value: 2,
+        type: '♥', // 填写♠♥♣♦
+        value: 'A', // 填写A2345678910JQK
         name: '测试道具',
-        description: '这是一个用于测试的道具，没有任何实际效果。',
+        description: '测试道具系统的工具。用于验证道具系统是否正常工作。',
         usage: ['hunger', 'fatigue', 'dishonor', 'clue', 'trace'] // 可用于所有牌堆
-    },
-    {
-        id: 'debug_box',
-        type: '♦', // 方块
-        value: 'Q', // Q=10
-        name: '神秘盒子',
-        description: '一个来历不明的盒子，谁知道打开它会发生什么？',
-        usage: ['hunger', 'fatigue', 'dishonor', 'clue', 'trace'] // 可用于所有牌堆
-    },
-    {
-        id: 'debug_notes',
-        type: '♠', // 黑桃
-        value: 9,
-        name: '开发者的笔记',
-        description: '上面记录着游戏开发者的一些想法和调试信息。阅读后可能会获得某些见解。',
-        usage: ['clue'] // 主要用于线索牌堆
-    },
-    {
-        id: 'debug_compass',
-        type: '♣', // 梅花
-        value: 8,
-        name: '破损的罗盘',
-        description: '指针似乎总是指向一个奇怪的方向。可能有助于寻找隐藏的地点。',
-        usage: ['clue', 'trace'] // 可用于线索和行踪牌堆
     },
     {
         id: 'debug_tool',
-        type: '♦', // 方块
-        value: 'K', // K=10
+        type: '♠', // 填写♠♥♣♦
+        value: 'K', // 填写A2345678910JQK
         name: '测试工具',
-        description: '游戏开发者用来测试道具系统的简单工具。用于验证道具系统是否正常工作。',
-        usage: ['hunger', 'fatigue', 'dishonor', 'clue', 'trace'] // 可用于所有牌堆
-    },
-    {
-        id: 'debug_allresources',
-        type: '♠', // 黑桃
-        value: 10,
-        name: '资源修改器',
-        description: '可以直接修改游戏中的各种资源值。适用于调试游戏平衡性。',
+        description: '测试道具系统的工具。用于验证道具系统是否正常工作。',
         usage: ['hunger', 'fatigue', 'dishonor', 'clue', 'trace'] // 可用于所有牌堆
     }
 ];
