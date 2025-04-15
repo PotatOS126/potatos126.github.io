@@ -367,9 +367,10 @@ button:disabled {
     border-radius: 10px;
     width: 95%;
     max-width: 900px;
-    max-height: none;
-    overflow-y: visible;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    position: relative;
 }
 
 @keyframes modalFadeIn {
@@ -414,7 +415,6 @@ button:disabled {
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
-    max-height: none;
     overflow-y: visible;
     padding: 0 10px;
 }
@@ -983,6 +983,29 @@ button:disabled {
     .card-pile {
         min-height: 375px;
     }
+    
+    .modal-content, .special-modal-content {
+        margin: 10px auto;
+        width: 95%;
+        padding: 15px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .special-modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .action-card {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .modal-title {
+        font-size: 1.4rem;
+        margin-top: 20px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1017,6 +1040,48 @@ button:disabled {
     .card-name {
         font-size: 12px;
         top: 30px;
+    }
+    
+    .modal-content, .special-modal-content {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        padding: 10px;
+    }
+    
+    .special-option {
+        padding: 12px;
+    }
+    
+    .option-name {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .option-description {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .option-effects {
+        gap: 8px;
+        padding-top: 8px;
+    }
+    
+    .option-effect {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .close-button {
+        top: 5px;
+        right: 10px;
+    }
+    
+    .modal-description {
+        font-size: 0.9rem;
     }
 }
 
@@ -1153,8 +1218,10 @@ button:disabled {
     background-color: #fff; /* 与主弹窗保持一致的背景色 */
     border: 1px solid #ddd; /* 标准边框 */
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.35); /* 稍微强一点的阴影，突出层级 */
-    max-height: none;
-    overflow-y: visible;
+    max-height: 85vh; /* 设置最大高度为视口高度的85% */
+    overflow-y: auto; /* 允许垂直滚动 */
+    position: relative;
+    margin: 5vh auto;
 }
 
 .special-modal-options {
@@ -1162,8 +1229,8 @@ button:disabled {
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
-    max-height: none;
     overflow-y: visible;
+    padding-bottom: 10px; /* 添加底部填充，防止内容被剪切 */
 }
 
 .special-option {
@@ -1216,4 +1283,12 @@ button:disabled {
 
 .option-effect span:first-child {
     margin-right: 5px;
+}
+
+@media (max-width: 900px) {
+    .action-card {
+        width: 100%;
+        max-width: none;
+        min-height: 220px;
+    }
 } 
