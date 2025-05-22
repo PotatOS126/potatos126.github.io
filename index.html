@@ -3,137 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>21点游戏地图原型</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>IncrediPool - 3D在线桌球</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #ui-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #player-list {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        #player-input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #game-status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* 击球控制界面 */
+        #shot-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        /* 方向控制器组 */
+        .direction-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 水平方向控制 */
+        .horizontal-direction {
+            flex: 1;
+        }
+
+        /* 垂直方向控制 */
+        .vertical-direction {
+            width: 80px;
+            height: 200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #vertical-slider {
+            writing-mode: bt-lr; /* 使滑块垂直显示 */
+            -webkit-appearance: slider-vertical; /* webkit浏览器支持 */
+            width: 20px;
+            height: 150px;
+            margin: 10px 0;
+        }
+
+        #vertical-value {
+            font-size: 14px;
+            color: white;
+            margin: 5px 0;
+        }
+
+        /* 滑块样式 */
+        .slider {
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #4CAF50, #ff4444);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 控制面板标签 */
+        .control-label {
+            color: white;
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        /* 击球按钮 */
+        #shoot-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #shoot-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        /* 击球点控制器 */
+        #hit-point-control {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #fff 0%, #ddd 100%);
+            position: relative;
+            margin: 20px auto;
+            border: 2px solid #666;
+        }
+
+        #hit-point-handle {
+            width: 16px;
+            height: 16px;
+            background: #ff4444;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+
+        /* 参考线 */
+        #hit-point-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #hit-point-grid::before,
+        #hit-point-grid::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        #hit-point-grid::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+        }
+
+        #hit-point-grid::after {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+        }
+
+        /* 控制面板布局优化 */
+        .control-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-item {
+            flex: 1;
+            min-width: 200px;
+            margin: 10px;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-Dj960QZE.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/three-BqKY4gtR.js">
+  <link rel="modulepreload" crossorigin href="/assets/socket.io-client-3A9clmTn.js">
+  <link rel="modulepreload" crossorigin href="/assets/cannon-es-qJLl3FcC.js">
 </head>
 <body>
-    <div class="game-container">
-        <!-- 标题区域 -->
-        <div class="header-area">
-            <h1 class="title">旅途</h1>
-            
-            <!-- 特殊计分版 -->
-            <div class="score-container">
-                <div class="score-board">
-                    <div class="score-item">
-                        <div class="score-label">主动遭遇</div>
-                        <div class="score-value" id="active-encounter">0</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">被动遭遇</div>
-                        <div class="score-value" id="passive-encounter">0</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="location-info">
-                <h2 id="current-location">当前位置：起点</h2>
-                <button id="debug-button" class="debug-button">调试</button>
-            </div>
+    <div id="game-container"></div>
+    <div id="ui-container">
+        <h2>IncrediPool</h2>
+        <div id="login-section">
+            <input type="text" id="player-input" placeholder="输入您的ID">
+            <button id="join-btn" class="button">进入游戏</button>
         </div>
-        
-        <!-- 地点选择区域 -->
-        <div class="locations-section">
-            <h3>选择前往地点</h3>
-            <div class="locations-container" id="locations-container">
-                <!-- 地点选项将在这里动态生成 -->
-            </div>
+        <div id="game-controls" style="display: none;">
+            <button id="cue-btn" class="button">拿起球杆</button>
+            <button id="release-btn" class="button" disabled>放下球杆</button>
+            <button id="reset-btn" class="button">重置球台</button>
         </div>
-        
-        <!-- 资源区域 -->
-        <div class="resources-area">
-            <h3 class="section-title">游戏资源</h3>
-            <div class="resources-row">
-                <!-- 饥饿损耗 -->
-                <div class="resource-column">
-                    <div class="resource-header">
-                        <span class="resource-label">饥饿</span>
-                        <span class="resource-value"><span id="hunger-value">0</span>/21</span>
-                    </div>
-                    <div class="resource-bar-container">
-                        <div class="resource-bar" id="hunger-bar"></div>
-                    </div>
-                    <div class="card-pile" id="hunger-pile">
-                        <!-- 饥饿牌堆 -->
-                    </div>
-                </div>
-                
-                <!-- 疲劳损耗 -->
-                <div class="resource-column">
-                    <div class="resource-header">
-                        <span class="resource-label">疲劳</span>
-                        <span class="resource-value"><span id="fatigue-value">0</span>/21</span>
-                    </div>
-                    <div class="resource-bar-container">
-                        <div class="resource-bar" id="fatigue-bar"></div>
-                    </div>
-                    <div class="card-pile" id="fatigue-pile">
-                        <!-- 疲劳牌堆 -->
-                    </div>
-                </div>
-                
-                <!-- 恶名损耗 -->
-                <div class="resource-column">
-                    <div class="resource-header">
-                        <span class="resource-label">恶名</span>
-                        <span class="resource-value"><span id="dishonor-value">0</span>/21</span>
-                    </div>
-                    <div class="resource-bar-container">
-                        <div class="resource-bar" id="dishonor-bar"></div>
-                    </div>
-                    <div class="card-pile" id="dishonor-pile">
-                        <!-- 恶名牌堆 -->
-                    </div>
-                </div>
-                
-                <!-- 线索 -->
-                <div class="resource-column">
-                    <div class="resource-header">
-                        <span class="resource-label">线索</span>
-                        <span class="resource-value"><span id="clue-value">0</span>/21</span>
-                    </div>
-                    <div class="resource-bar-container">
-                        <div class="resource-bar" id="clue-bar"></div>
-                    </div>
-                    <div class="card-pile" id="clue-pile">
-                        <!-- 线索牌堆 -->
-                    </div>
-                    <div class="special-desc">基础损耗正好21点</div>
-                </div>
-                
-                <!-- 行踪 -->
-                <div class="resource-column">
-                    <div class="resource-header">
-                        <span class="resource-label">行踪</span>
-                        <span class="resource-value"><span id="trace-value">0</span>/21</span>
-                    </div>
-                    <div class="resource-bar-container">
-                        <div class="resource-bar" id="trace-bar"></div>
-                    </div>
-                    <div class="card-pile" id="trace-pile">
-                        <!-- 行踪牌堆 -->
-                    </div>
-                    <div class="special-desc">基础损耗超过21点</div>
-                </div>
-            </div>
+        <div id="game-status"></div>
+        <div id="player-list">
+            <h3>在线玩家</h3>
+            <ul id="players"></ul>
         </div>
     </div>
-    
-    <!-- 调试弹窗 -->
-    <div id="debug-modal" class="debug-modal">
-        <div class="debug-modal-content">
-            <span class="debug-close">&times;</span>
-            <h3>调试工具</h3>
-            <div class="debug-buttons">
-                <button id="add-hunger-card">添加饥饿牌</button>
-                <button id="add-fatigue-card">添加疲劳牌</button>
-                <button id="add-dishonor-card">添加恶名牌</button>
-                <button id="add-clue-card">添加线索牌</button>
-                <button id="add-trace-card">添加行踪牌</button>
+
+    <!-- 击球控制界面 -->
+    <div id="shot-controls">
+        <div class="control-group">
+            <div class="control-item">
+                <div class="control-label">击球方向</div>
+                <div class="direction-controls">
+                    <div class="horizontal-direction">
+                        <input type="range" id="direction-slider" class="slider" min="0" max="360" value="0" step="1">
+                        <div id="direction-value">0°</div>
+                    </div>
+                    <div class="vertical-direction">
+                        <div id="vertical-value">0°</div>
+                        <input type="range" id="vertical-slider" class="slider" min="0" max="90" value="0" step="1">
+                    </div>
+                </div>
+            </div>
+            <div class="control-item">
+                <div class="control-label">击球点</div>
+                <div id="hit-point-control">
+                    <div id="hit-point-grid"></div>
+                    <div id="hit-point-handle"></div>
+                </div>
             </div>
         </div>
+
+        <div class="control-label">力度: <span id="force-value">5</span></div>
+        <div id="force-control">
+            <input type="range" id="force-slider" class="slider" min="0" max="10" value="5" step="0.1">
+        </div>
+
+        <button id="shoot-button">击球</button>
     </div>
-    
-    <script type="module" src="game.js"></script>
+
 </body>
 </html> 
