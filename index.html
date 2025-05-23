@@ -22,6 +22,7 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 8px;
+            max-width: 300px;
         }
         #player-list {
             margin: 10px 0;
@@ -53,111 +54,299 @@
             font-weight: bold;
         }
 
+        /* 聊天室样式 */
+        #chat-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 320px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            font-size: 14px;
+        }
+
+        #chat-header {
+            padding: 10px 15px;
+            background: rgba(76, 175, 80, 0.8);
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 300px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .chat-message.player {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+
+        .chat-message.system {
+            background: rgba(255, 152, 0, 0.2);
+            border-left: 3px solid #FF9800;
+            font-style: italic;
+        }
+
+        .chat-message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 3px solid #F44336;
+        }
+
+        .chat-sender {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-right: 5px;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            float: right;
+            margin-top: 2px;
+        }
+
+        .chat-content {
+            margin-top: 2px;
+        }
+
+        #chat-input-container {
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            gap: 8px;
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        #chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #chat-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        #chat-send {
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        #chat-send:hover:not(:disabled) {
+            background: #45a049;
+        }
+
+        #chat-send:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #chat-container {
+                width: 280px;
+                height: 300px;
+            }
+            
+            #ui-container {
+                max-width: 250px;
+            }
+        }
+
         /* 击球控制界面 */
         #shot-controls {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
+            border-radius: 15px;
             display: none;
+            border: 2px solid #4CAF50;
+            min-width: 800px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 控制面板标题 */
+        .shot-controls-title {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4CAF50;
+            padding-bottom: 10px;
         }
         
-        /* 方向控制器组 */
-        .direction-controls {
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        /* 主控制区域 */
+        .main-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
         }
 
-        /* 水平方向控制 */
-        .horizontal-direction {
-            flex: 1;
+        /* 控制组样式 */
+        .control-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
         }
 
-        /* 垂直方向控制 */
-        .vertical-direction {
-            width: 80px;
-            height: 200px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #vertical-slider {
-            writing-mode: bt-lr; /* 使滑块垂直显示 */
-            -webkit-appearance: slider-vertical; /* webkit浏览器支持 */
-            width: 20px;
-            height: 150px;
-            margin: 10px 0;
-        }
-
-        #vertical-value {
+        .control-section h4 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
             font-size: 14px;
-            color: white;
-            margin: 5px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* 滑块样式 */
+        /* 双精度控制器 */
+        .dual-control {
+            margin-bottom: 15px;
+        }
+
+        .dual-control-label {
+            color: white;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dual-control-value {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .dual-sliders {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .main-slider {
+            flex: 2;
+            height: 8px;
+        }
+
+        .fine-slider {
+            flex: 1;
+            height: 6px;
+        }
+
+        /* 滑块基础样式 */
         .slider {
             -webkit-appearance: none;
-            background: linear-gradient(to right, #4CAF50, #ff4444);
+            background: linear-gradient(to right, #2c5530, #4CAF50, #ff4444);
             border-radius: 10px;
             outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
         }
 
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             background: #fff;
             border-radius: 50%;
             cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
-        /* 控制面板标签 */
-        .control-label {
-            color: white;
+        /* 力度滑块特殊样式 */
+        .force-slider {
+            background: linear-gradient(to right, #4CAF50, #ffeb3b, #ff4444);
+        }
+
+        /* 击球点控制器增强 */
+        .hit-point-section {
             text-align: center;
-            margin: 10px 0;
-            font-size: 14px;
         }
 
-        /* 击球按钮 */
-        #shoot-button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 16px;
-        }
-        #shoot-button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-
-        /* 击球点控制器 */
         #hit-point-control {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background: radial-gradient(circle at center, #fff 0%, #ddd 100%);
+            background: radial-gradient(circle at center, #fff 5%, #e0e0e0 50%, #999 100%);
             position: relative;
-            margin: 20px auto;
-            border: 2px solid #666;
+            margin: 15px auto;
+            border: 3px solid #4CAF50;
+            cursor: crosshair;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         #hit-point-handle {
-            width: 16px;
-            height: 16px;
+            width: 12px;
+            height: 12px;
             background: #ff4444;
             border-radius: 50%;
             position: absolute;
@@ -165,10 +354,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+            border: 2px solid white;
+            z-index: 10;
         }
 
-        /* 参考线 */
+        /* 参考线增强 */
         #hit-point-grid {
             position: absolute;
             width: 100%;
@@ -180,47 +371,274 @@
         #hit-point-grid::after {
             content: '';
             position: absolute;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(76, 175, 80, 0.3);
         }
 
         #hit-point-grid::before {
             width: 1px;
             height: 100%;
             left: 50%;
+            transform: translateX(-50%);
         }
 
         #hit-point-grid::after {
             width: 100%;
             height: 1px;
             top: 50%;
+            transform: translateY(-50%);
         }
 
-        /* 控制面板布局优化 */
-        .control-group {
+        /* 击球点坐标显示 */
+        .hit-point-coords {
+            color: #4CAF50;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* 按钮区域 */
+        .button-area {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin: 10px 0;
-            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(76, 175, 80, 0.3);
         }
 
-        .control-item {
+        /* 击球按钮增强 */
+        #shoot-button {
+            flex: 2;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #shoot-button:hover:not(:disabled) {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        #shoot-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 重置按钮 */
+        #reset-controls-button {
             flex: 1;
-            min-width: 200px;
-            margin: 10px;
+            padding: 12px 16px;
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #reset-controls-button:hover {
+            background: linear-gradient(45deg, #f57c00, #ff9800);
+            transform: translateY(-2px);
+        }
+
+        /* 微调标签 */
+        .fine-tune-label {
+            color: #ccc;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            #shot-controls {
+                min-width: auto;
+                width: 90vw;
+                max-width: 700px;
+            }
+            
+            .main-controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* 🎯 游戏状态指示器样式 */
+        #game-state-indicator {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(56, 142, 60, 0.9));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+
+        /* 不同状态的颜色主题 */
+        #game-state-indicator.waiting {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.9), rgba(251, 140, 0, 0.9));
+        }
+
+        #game-state-indicator.your-turn {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(56, 142, 60, 0.9));
+            animation: pulse 2s infinite;
+        }
+
+        #game-state-indicator.others-turn {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.9), rgba(30, 136, 229, 0.9));
+        }
+
+        #game-state-indicator.simulating {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.9), rgba(142, 36, 170, 0.9));
+            animation: shimmer 1.5s infinite;
+        }
+
+        #game-state-indicator.idle {
+            background: linear-gradient(135deg, rgba(158, 158, 158, 0.9), rgba(117, 117, 117, 0.9));
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1); 
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.05); 
+                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            }
+        }
+
+        @keyframes shimmer {
+            0% { 
+                background-position: -200% 0;
+            }
+            100% { 
+                background-position: 200% 0;
+            }
+        }
+
+        #game-state-indicator.simulating {
+            background: linear-gradient(
+                90deg, 
+                rgba(156, 39, 176, 0.9) 0%, 
+                rgba(233, 30, 99, 0.9) 50%, 
+                rgba(156, 39, 176, 0.9) 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* 状态图标 */
+        .state-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            #game-state-indicator {
+                font-size: 14px;
+                padding: 10px 20px;
+                min-width: 200px;
+                top: 10px;
+            }
+        }
+
+        /* 🌐 网络延迟指示器样式 */
+        #network-latency-indicator {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: normal;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 999;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        /* 延迟状态颜色 */
+        #network-latency-indicator.excellent {
+            border-left: 3px solid #4CAF50;
+        }
+
+        #network-latency-indicator.good {
+            border-left: 3px solid #8BC34A;
+        }
+
+        #network-latency-indicator.fair {
+            border-left: 3px solid #FF9800;
+        }
+
+        #network-latency-indicator.poor {
+            border-left: 3px solid #F44336;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            #network-latency-indicator {
+                font-size: 11px;
+                padding: 5px 12px;
+                min-width: 100px;
+                top: 60px;
+            }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-CYejNgVx.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/three-BqKY4gtR.js">
+  <script type="module" crossorigin src="/assets/index-DBS22AZx.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/three-BFKwt-hE.js">
   <link rel="modulepreload" crossorigin href="/assets/socket.io-client-3A9clmTn.js">
-  <link rel="modulepreload" crossorigin href="/assets/cannon-es-qJLl3FcC.js">
+  <link rel="modulepreload" crossorigin href="/assets/cannon-es-Cu3T84dU.js">
 </head>
 <body>
     <div id="game-container"></div>
+    
+    <!-- 🎯 游戏状态指示器 -->
+    <div id="game-state-indicator" class="idle">
+        <span class="state-icon">⏳</span>
+        <span id="state-text">等待连接服务器...</span>
+    </div>
+    
+    <!-- 🌐 网络延迟指示器 -->
+    <div id="network-latency-indicator" class="excellent">
+        <span id="latency-text">延迟: --ms</span>
+    </div>
+    
+    <!-- 左侧游戏控制面板 -->
     <div id="ui-container">
         <h2>IncrediPool</h2>
         <div id="login-section">
-            <input type="text" id="player-input" placeholder="输入您的ID">
+            <input type="text" id="player-input" placeholder="输入您的ID" maxlength="20">
             <button id="join-btn" class="button">进入游戏</button>
         </div>
         <div id="game-controls" style="display: none;">
@@ -235,37 +653,89 @@
         </div>
     </div>
 
+    <!-- 右侧聊天室 -->
+    <div id="chat-container">
+        <div id="chat-header">
+            💬 聊天室
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="输入消息..." maxlength="200" disabled>
+            <button id="chat-send" disabled>发送</button>
+        </div>
+    </div>
+
     <!-- 击球控制界面 -->
     <div id="shot-controls">
-        <div class="control-group">
-            <div class="control-item">
-                <div class="control-label">击球方向</div>
-                <div class="direction-controls">
-                    <div class="horizontal-direction">
-                        <input type="range" id="direction-slider" class="slider" min="0" max="360" value="0" step="1">
-                        <div id="direction-value">0°</div>
+        <div class="shot-controls-title">🎯 击球控制面板</div>
+        
+        <div class="main-controls">
+            <!-- 水平角度控制 -->
+            <div class="control-section">
+                <h4>🧭 水平角度</h4>
+                <div class="dual-control">
+                    <div class="dual-control-label">
+                        <span>粗调 (0-360°)</span>
+                        <span class="dual-control-value" id="horizontal-value">0°</span>
                     </div>
-                    <div class="vertical-direction">
-                        <div id="vertical-value">0°</div>
-                        <input type="range" id="vertical-slider" class="slider" min="0" max="90" value="0" step="1">
+                    <div class="dual-sliders">
+                        <input type="range" id="horizontal-slider" class="slider main-slider" min="0" max="360" value="0" step="1">
+                        <input type="range" id="horizontal-fine-slider" class="slider fine-slider" min="-5" max="5" value="0" step="0.1">
                     </div>
+                    <div class="fine-tune-label">微调 (±5°)</div>
+                </div>
+                
+                <div class="dual-control">
+                    <div class="dual-control-label">
+                        <span>垂直角度 (0-45°)</span>
+                        <span class="dual-control-value" id="vertical-value">0°</span>
+                    </div>
+                    <div class="dual-sliders">
+                        <input type="range" id="vertical-slider" class="slider main-slider" min="0" max="45" value="0" step="1">
+                        <input type="range" id="vertical-fine-slider" class="slider fine-slider" min="-2" max="2" value="0" step="0.1">
+                    </div>
+                    <div class="fine-tune-label">微调 (±2°)</div>
                 </div>
             </div>
-            <div class="control-item">
-                <div class="control-label">击球点</div>
+
+            <!-- 击球点控制 -->
+            <div class="control-section hit-point-section">
+                <h4>🎯 击球点</h4>
                 <div id="hit-point-control">
                     <div id="hit-point-grid"></div>
                     <div id="hit-point-handle"></div>
                 </div>
+                <div class="hit-point-coords">
+                    坐标: (<span id="hit-point-x">0.0</span>, <span id="hit-point-y">0.0</span>)
+                </div>
+            </div>
+
+            <!-- 力度控制 -->
+            <div class="control-section">
+                <h4>💪 击球力度</h4>
+                <div class="dual-control">
+                    <div class="dual-control-label">
+                        <span>粗调 (0-10)</span>
+                        <span class="dual-control-value" id="force-value">5.0</span>
+                    </div>
+                    <div class="dual-sliders">
+                        <input type="range" id="force-slider" class="slider main-slider force-slider" min="0" max="10" value="5" step="0.5">
+                        <input type="range" id="force-fine-slider" class="slider fine-slider force-slider" min="-0.5" max="0.5" value="0" step="0.01">
+                    </div>
+                    <div class="fine-tune-label">微调 (±0.5)</div>
+                </div>
+                
+                <div style="color: #ccc; font-size: 11px; margin-top: 10px; text-align: center;">
+                    <div>💚 0-3: 轻力 | 🟡 4-6: 中力 | 🔴 7-10: 重力</div>
+                </div>
             </div>
         </div>
 
-        <div class="control-label">力度: <span id="force-value">5</span></div>
-        <div id="force-control">
-            <input type="range" id="force-slider" class="slider" min="0" max="10" value="5" step="0.1">
+        <!-- 按钮区域 -->
+        <div class="button-area">
+            <button id="reset-controls-button">🔄 重置控制</button>
+            <button id="shoot-button">🎱 击球</button>
         </div>
-
-        <button id="shoot-button">击球</button>
     </div>
 
 </body>
